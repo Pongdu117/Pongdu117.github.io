@@ -41,7 +41,7 @@
     <script>
         let gameStarted = false; // 게임 시작 여부를 나타내는 변수
         let score = 0;
-		let lives = 3;
+		let lives = 5;
 		let count = 0;
 
 	// ★ 브라우저의 크기에 맞춰 동적 변화
@@ -95,9 +95,9 @@
         function drawDino() {
             let dinoImg;
 			let cool = 500;
-			if(50 < count) cool = 400;
+			if(150 < count) cool =200;
 			else if(100 < count) cool =300;
-			else if(150 < count) cool =200;
+			else if(50 < count) cool = 400;
             if (Math.floor(Date.now() / cool) % 2 === 0) {
                 dinoImg = dinoImg1;
             } else {
@@ -147,7 +147,6 @@
 		let hurdleSpeed = 14;
 		let hurdleIntervalMain = 1000;
 		let hurdleInterval = 1111;
-
         // 선인장 객체 생성 함수
 		function createHurdle() {
 			const hurdleSample = [
@@ -196,13 +195,16 @@
 					}
 					hurdles.shift();
 					count++;
-					hurdleIntervalMain -= 5;
+					hurdleIntervalMain -= 3;
 				}
 			}
 		}
 
 		// 선인장 이동 함수
 		function moveHurdles() {
+			if(150 < count) hurdleSpeed = 23;
+			else if(100 < count) hurdleSpeed = 20;
+			else if(50 < count) hurdleSpeed = 17;
 			for (let i = 0; i < hurdles.length; i++) {
 				hurdles[i].x -= hurdleSpeed; // 왼쪽으로 이동
 			}
