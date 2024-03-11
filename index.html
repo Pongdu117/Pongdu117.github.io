@@ -19,10 +19,21 @@
             width: 100%; /* Canvas 요소의 너비를 100%로 설정하여 화면 전체를 채우도록 합니다. */
             height: 100%; /* Canvas 요소의 높이도 화면 전체를 채우도록 설정합니다. */
         }
+        #info {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 30px;
+            color: black;
+            text-shadow: 1px 1px 2px black;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    <div id="info"></div>
 	<audio id="startSound" src="start.wav"></audio>
 	<audio id="jumpSound" src="jump.wav"></audio>
 	<audio id="hitSound" src="hit.wav"></audio>
@@ -31,6 +42,7 @@
         let gameStarted = false; // 게임 시작 여부를 나타내는 변수
         let score = 0;
 		let lives = 3;
+		let count = 0;
 
 	// ★ 브라우저의 크기에 맞춰 동적 변화
         const canvas = document.getElementById('gameCanvas');
@@ -82,7 +94,9 @@
 
         function drawDino() {
             let dinoImg;
-            if (Math.floor(Date.now() / 400) % 2 === 0) {
+			let cool = 400 - count * 3;
+			if(cool < 200) cool = 200;
+            if (Math.floor(Date.now() / cool) % 2 === 0) {
                 dinoImg = dinoImg1;
             } else {
                 dinoImg = dinoImg2;
@@ -129,7 +143,8 @@
 		// 선인장
 		let hurdles = [];
 		let hurdleSpeed = 14;
-		let hurdleInterval = 750;
+		let hurdleIntervalMain = 1000;
+		let hurdleInterval = 1111;
 
         // 선인장 객체 생성 함수
 		function createHurdle() {
@@ -139,9 +154,10 @@
 				{ img: 'hurdle3.png', width: 100, height: 181 }
 			];
 			const number = Math.floor(Math.random() * hurdleSample.length);
-			if(number == 0) hurdleInterval = 500;
-			else if(number == 1) hurdleInterval = 650;
-			else if(number == 2) hurdleInterval = 800;
+			if(hurdleIntervalMain < 666) hurdleIntervalMain = 666;
+			if(number == 0) hurdleInterval = hurdleIntervalMain / 1.4;
+			else if(number == 1) hurdleInterval = hurdleIntervalMain / 1.15;
+			else if(number == 2) hurdleInterval = hurdleIntervalMain / 0.9;
 			const randomHurdle = hurdleSample[number];
 			const hurdle = {
 				img: randomHurdle.img,
@@ -163,11 +179,22 @@
 			}
 		}
 
-		// 선인장 제거 함수
+		// 선인장 제거, 점수 획득 함수
 		function deleteHurdles() {
 			for (let i = 0; i < hurdles.length; i++) {
-				if(hurdles[i].x < -50) {
+				const hurdle = hurdles[i];
+				if(hurdle.x < -50) {
+					// 공룡이 어떤 선인장을 통과했는지에 따라 점수를 증가시킵니다.
+					if (hurdle.img === 'hurdle1.png') {
+						score += 100 + count; // hurdle1.png 선인장을 통과한 경우 100점을 추가합니다.
+					} else if (hurdle.img === 'hurdle2.png') {
+						score += 150 + count; // hurdle2.png 선인장을 통과한 경우 150점을 추가합니다.
+					} else if (hurdle.img === 'hurdle3.png') {
+						score += 200 + count; // hurdle3.png 선인장을 통과한 경우 200점을 추가합니다.
+					}
 					hurdles.shift();
+					count++;
+					hurdleIntervalMain -= 5;
 				}
 			}
 		}
@@ -204,7 +231,7 @@
 					hurdles.shift();
 					lives--;
 
-					// 목숨이 0이 되면 게임 오버 처리
+					// 생명이 0이 되면 게임 오버 처리
 					if (lives === 0) {
 						document.getElementById('defeatSound').play();
 						alert('Game Over!'); // 예시로 경고창을 표시합니다.
@@ -217,9 +244,21 @@
 			}
         }
 
+	// ★ 생명과 점수 표시
         function updateScore() {
             // Update score logic here
         }
+
+        // 표시된 생명과 점수를 업데이트하는 함수
+        function updateInfo() {
+			const infoElement = document.getElementById('info');
+			if(1 < lives) {
+				infoElement.innerHTML = `<span style="color: pink;">생명: ${lives}</span> <span style="color: purple;">─</span> <span style="color: blue;">점수: ${score}</span>`;
+			} else {
+				infoElement.innerHTML = `<span style="color: red;">생명: ${lives}</span> <span style="color: purple;">─</span> <span style="color: blue;">점수: ${score}</span>`;
+			}
+		}
+
 
 	// ★ 키 입력 이벤트
         window.addEventListener('keydown', function(event) {
@@ -273,6 +312,11 @@
 			checkCollision();
 			updateScore();
 			JumpDino();
+
+			// 게임이 시작된 경우에만 정보 업데이트
+            if (gameStarted) {
+                updateInfo();
+            }
 
 			requestAnimationFrame(gameLoop);
 		}
