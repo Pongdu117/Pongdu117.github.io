@@ -94,8 +94,10 @@
 
         function drawDino() {
             let dinoImg;
-			let cool = 400 - count * 3;
-			if(cool < 200) cool = 200;
+			let cool = 500;
+			if(50 < count) cool = 400;
+			else if(100 < count) cool =300;
+			else if(150 < count) cool =200;
             if (Math.floor(Date.now() / cool) % 2 === 0) {
                 dinoImg = dinoImg1;
             } else {
