@@ -129,6 +129,7 @@
 		// 선인장
 		let hurdles = [];
 		let hurdleSpeed = 14;
+		let hurdleInterval = 750;
 
         // 선인장 객체 생성 함수
 		function createHurdle() {
@@ -137,7 +138,11 @@
 				{ img: 'hurdle2.png', width: 100, height: 122 },
 				{ img: 'hurdle3.png', width: 100, height: 181 }
 			];
-			const randomHurdle = hurdleSample[Math.floor(Math.random() * hurdleSample.length)];
+			const number = Math.floor(Math.random() * hurdleSample.length);
+			if(number == 0) hurdleInterval = 500;
+			else if(number == 1) hurdleInterval = 650;
+			else if(number == 2) hurdleInterval = 800;
+			const randomHurdle = hurdleSample[number];
 			const hurdle = {
 				img: randomHurdle.img,
 				width: randomHurdle.width,
@@ -161,7 +166,7 @@
 		// 선인장 제거 함수
 		function deleteHurdles() {
 			for (let i = 0; i < hurdles.length; i++) {
-				if(hurdles[i].x < -100) {
+				if(hurdles[i].x < -50) {
 					hurdles.shift();
 				}
 			}
@@ -254,7 +259,7 @@
 			const deltaTime = timestamp - lastHurdleCreationTime;
 
 			// 일정 시간이 지날 때마다 선인장 생성
-			if (deltaTime >= 750) {
+			if (deltaTime >= hurdleInterval) {
 				createHurdle();
 				lastHurdleCreationTime = timestamp;
 			}
