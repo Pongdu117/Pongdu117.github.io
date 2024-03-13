@@ -13,7 +13,7 @@
         }
         canvas {
             display: block;
-            background-image: url('main.jpg');
+            background-image: url('main.png');
             background-size: cover; /* 배경 이미지가 화면을 완전히 채우도록 설정합니다. */
             background-repeat: no-repeat;
             width: 100%; /* Canvas 요소의 너비를 100%로 설정하여 화면 전체를 채우도록 합니다. */
@@ -29,20 +29,42 @@
             color: black;
             text-shadow: 1px 1px 2px black;
         }
+		#best {
+            position: absolute;
+            top: 50px;
+            left: 90%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 15px;
+            color: black;
+            text-shadow: 1px 1px 2px black;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
     <div id="info"></div>
+	<div id="best"></div>
+	<div id="gameOver" style="display: none;">
+		<div style="position: absolute; top: 33%; left: 55%; transform: translate(-50%, -50%); text-align: center;">
+			<span style="font-size: 40px; color: black; font-weight: bold;"><span id="currentScore"></span></span>
+
+		</div>
+	</div>
 	<audio id="startSound" src="start.wav"></audio>
 	<audio id="jumpSound" src="jump.wav"></audio>
 	<audio id="hitSound" src="hit.wav"></audio>
 	<audio id="defeatSound" src="defeat.wav"></audio>
+	
+
     <script>
         let gameStarted = false; // 게임 시작 여부를 나타내는 변수
+		let gameDefeat = false; // 게임 패배 화면임을 나타내는 변수
+		let bestScore = 0;
         let score = 0;
 		let lives = 5;
 		let count = 0;
+		let retry = 0;
 
 	// ★ 브라우저의 크기에 맞춰 동적 변화
         const canvas = document.getElementById('gameCanvas');
@@ -67,7 +89,7 @@
 
 	// ★ 3요소. 바닥 공룡 선인장
 		// 바닥
-        const groundY = window.innerHeight * 0.8;
+		const groundY = window.innerHeight * 0.8;
         function drawGround() {
             const groundHeight = window.innerHeight - groundY;
             ctx.fillStyle = 'black'; // 검은색으로 바닥을 칠합니다.
@@ -237,10 +259,16 @@
 
 					// 생명이 0이 되면 게임 오버 처리
 					if (lives === 0) {
-						document.getElementById('defeatSound').play();
-						alert('Game Over!'); // 예시로 경고창을 표시합니다.
-						location.reload(); // 게임 재시작을 위해 페이지를 다시 로드합니다.
+						gameStarted = false;
+						gameDefeat = true;
+						retry++;
 
+						ctx.clearRect(0, 0, canvas.width, canvas.height); // 그림을 제거합니다.
+						document.getElementById('info').style.display = 'none'; // 텍스트를 제거합니다.
+						canvas.style.backgroundImage = 'url("end.png")'; // end.png를 배경으로 설정합니다.
+						document.getElementById('currentScore').textContent = score;
+						document.getElementById('gameOver').style.display = 'block'; // 텍스트를 표시합니다.
+						document.getElementById('defeatSound').play();
 					} else {
 						document.getElementById('hitSound').play();
 					}
@@ -249,9 +277,6 @@
         }
 
 	// ★ 생명과 점수 표시
-        function updateScore() {
-            // Update score logic here
-        }
 
         // 표시된 생명과 점수를 업데이트하는 함수
         function updateInfo() {
@@ -261,6 +286,11 @@
 			} else {
 				infoElement.innerHTML = `<span style="color: red;">생명: ${lives}</span> <span style="color: purple;">─</span> <span style="color: blue;">점수: ${score}</span>`;
 			}
+			if(bestScore < score) {
+				bestScore = score;
+			}
+			const bestElement = document.getElementById('best');
+			bestElement.innerHTML = `<span style="color: black;">최고 점수: ${bestScore}</span>`;
 		}
 
 
@@ -274,8 +304,14 @@
 					}
 				} else {
 					gameStarted = true;
+					score = 0;
+					lives = 5;
+					count = 0;
 					canvas.style.backgroundImage = 'none'; // 배경 이미지를 없애고
+					document.getElementById('gameOver').style.display = 'none';
+					document.getElementById('info').style.display = 'block';
 					document.getElementById('startSound').play();
+					document.getElementById('best').style.display = 'block';
 					gameLoop(); // 게임 순환 시작
 				}
             }
@@ -314,7 +350,6 @@
 			moveHurdles();
 			drawHurdles();
 			checkCollision();
-			updateScore();
 			JumpDino();
 
 			// 게임이 시작된 경우에만 정보 업데이트
